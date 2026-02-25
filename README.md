@@ -4,11 +4,12 @@ Aplicación **de escritorio** para gestionar una biblioteca municipal, hecha en 
 
 ## Funcionalidades
 
-- Catálogo de libros.
-- Registro de socios.
-- Préstamos y devoluciones.
+- Catálogo de libros (alta y borrado).
+- Registro de socios (alta y borrado).
+- Préstamos, devoluciones y borrado de préstamos.
 - Detección de préstamos atrasados.
 - Panel de resumen con métricas.
+- Interfaz visual renovada (pestañas, tablas y botones de acción).
 
 ## Ejecutar
 
