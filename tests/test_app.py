@@ -1,49 +1,40 @@
-import http.client
-import threading
-import time
 from pathlib import Path
-from urllib.parse import urlencode
 
-import app
-from biblioteca.db import init_db
-from http.server import ThreadingHTTPServer
+from app import BibliotecaService
 
 
-def start_server(db_path: Path, port: int):
-    app.DB_PATH = db_path
-    init_db(db_path)
-    server = ThreadingHTTPServer(("127.0.0.1", port), app.BibliotecaHandler)
-    t = threading.Thread(target=server.serve_forever, daemon=True)
-    t.start()
-    time.sleep(0.1)
-    return server
+def test_service_flow(tmp_path: Path):
+    service = BibliotecaService(tmp_path / "test.sqlite")
+
+    service.crear_libro("1984", "Orwell", "Distopía", "isbn-1984", 2)
+    service.crear_socio("Lucía", "lucia@example.com", "", "")
+
+    libros = service.listar_libros()
+    socios = service.listar_socios()
+    assert len(libros) == 1
+    assert len(socios) == 1
+
+    ok = service.crear_prestamo(libros[0]["id"], socios[0]["id"])
+    assert ok is True
+
+    prestamos = service.listar_prestamos()
+    assert len(prestamos) == 1
+    assert prestamos[0]["estado"] == "activo"
+
+    service.devolver_prestamo(prestamos[0]["id"])
+    prestamos = service.listar_prestamos()
+    assert prestamos[0]["estado"] == "devuelto"
 
 
-def request(method: str, path: str, data=None, port=8765):
-    conn = http.client.HTTPConnection("127.0.0.1", port)
-    body = urlencode(data) if data else None
-    headers = {"Content-Type": "application/x-www-form-urlencoded"} if data else {}
-    conn.request(method, path, body=body, headers=headers)
-    resp = conn.getresponse()
-    payload = resp.read().decode("utf-8", errors="ignore")
-    return resp.status, payload, dict(resp.getheaders())
+def test_prestamo_sin_copias(tmp_path: Path):
+    service = BibliotecaService(tmp_path / "test.sqlite")
 
+    service.crear_libro("Dune", "Herbert", "Ciencia ficción", "isbn-dune", 1)
+    service.crear_socio("Ana", "ana@example.com", "", "")
+    service.crear_socio("Luis", "luis@example.com", "", "")
 
-def test_home_and_flow(tmp_path):
-    server = start_server(tmp_path / "test.sqlite", 8765)
-    try:
-        status, html, _ = request("GET", "/")
-        assert status == 200
-        assert "Biblioteca de Mi Pueblo" in html
+    libro_id = service.listar_libros()[0]["id"]
+    socios = service.listar_socios()
 
-        request("POST", "/libros", {
-            "titulo": "1984", "autor": "Orwell", "categoria": "Distopía", "isbn": "abc", "total_copias": "2"
-        })
-        request("POST", "/socios", {
-            "nombre": "Lucía", "email": "lucia@example.com", "telefono": "", "direccion": ""
-        })
-        status, html, _ = request("GET", "/prestamos")
-        assert "1984" in html
-        assert "Lucía" in html
-    finally:
-        server.shutdown()
+    assert service.crear_prestamo(libro_id, socios[0]["id"]) is True
+    assert service.crear_prestamo(libro_id, socios[1]["id"]) is False

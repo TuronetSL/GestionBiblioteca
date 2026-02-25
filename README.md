@@ -1,11 +1,14 @@
 # Gestión de Biblioteca
 
-Aplicación web para gestionar una biblioteca municipal. Incluye:
+Aplicación **de escritorio** para gestionar una biblioteca municipal, hecha en Python con `tkinter` + SQLite.
+
+## Funcionalidades
 
 - Catálogo de libros.
 - Registro de socios.
-- Préstamos, devoluciones y control de atrasos.
-- Panel principal con métricas rápidas.
+- Préstamos y devoluciones.
+- Detección de préstamos atrasados.
+- Panel de resumen con métricas.
 
 ## Ejecutar
 
@@ -13,7 +16,7 @@ Aplicación web para gestionar una biblioteca municipal. Incluye:
 python app.py
 ```
 
-Abrir en: `http://localhost:5000`
+Se abrirá una ventana de escritorio (no usa navegador web).
 
 ## Probar
 
